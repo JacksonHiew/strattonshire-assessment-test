@@ -19,9 +19,19 @@
     </v-app-bar>
 
     <v-main>
-      <div class="px-2 py-2">
-        <chat-box></chat-box>
-        <chat-box :isSender="false"></chat-box>
+        <virtual-list
+          style="width: 100%; height: 100%; overflow-y: auto"
+          :data-sources="
+            messages.map((e) => ({
+              ...e,
+              isSender: e.senderId === currentUid,
+            }))
+          "
+          :data-component="chatBox"
+          :data-key="'senderId'"
+          ref="scrollable"
+          class="px-2"
+        />
       </div>
     </v-main>
 
