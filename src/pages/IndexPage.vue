@@ -1,9 +1,10 @@
 <template>
   <v-app>
     <v-app-bar
-      app
-      color="primary"
       dark
+      ref="header"
+      color="primary"
+      style="z-index: 1"
       class="d-flex justify-center align-center"
     >
       <div class="d-flex justify-center align-center">
@@ -19,6 +20,10 @@
     </v-app-bar>
 
     <v-main>
+      <div
+        class="d-flex align-end"
+        :style="`height: calc(100vh - ${headerHeight + footerHeight}px)`"
+      >
         <virtual-list
           style="width: 100%; height: 100%; overflow-y: auto"
           :data-sources="
@@ -36,24 +41,41 @@
     </v-main>
 
     <v-footer
+      ref="footer"
       color="white"
       class="py-2 px-2"
       style="box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1)"
     >
-      <div style="width: 100%" class="d-flex align-center">
-        <div class="d-flex mr-4" style="flex: 1">
-          <v-text-field
-            placeholder="Start typing..."
-            v-model="replyMessage"
-            hide-details
-            filled
-            rounded
-            dense
-          ></v-text-field>
-        </div>
-        <v-btn icon :color="replyMessage != '' ? 'primary' : ''">
-          <v-icon>mdi-send</v-icon>
-        </v-btn>
+      <div style="width: 100%">
+        <form
+          class="d-flex align-center"
+        >
+          <div class="d-flex mr-4" style="flex: 1">
+            <v-text-field
+              placeholder="Start typing..."
+              v-model="messageContent"
+              hide-details
+              filled
+              rounded
+              dense
+            ></v-text-field>
+          </div>
+          <v-btn
+            v-if="messageContent.trim() != ''"
+            color="primary"
+            type="submit"
+            icon
+          >
+            <v-icon>mdi-send</v-icon>
+          </v-btn>
+          <a
+            v-else
+            class="px-2"
+            style="font-size: 24px"
+          >
+            {{ joypixels.shortnameToUnicode(":heart_eyes:") }}
+          </a>
+        </form>
       </div>
     </v-footer>
   </v-app>
@@ -61,16 +83,55 @@
 
 <script>
 import ChatBox from "@/components/ChatBox.vue";
+import VirtualList from "vue-virtual-scroll-list";
+import joypixels from "emoji-toolkit";
+import floating from "@/plugins/floating";
 
 export default {
   name: "IndexPage",
   components: {
-    "chat-box": ChatBox,
+    VirtualList,
   },
   data() {
     return {
-      replyMessage: "",
+      chatBox: ChatBox,
+      joypixels: joypixels,
+      headerHeight: 0,
+      footerHeight: 0,
     };
+  },
+  mounted() {
+    this.updateHeaderHeight();
+    this.updateFooterHeight();
+
+  },
+  methods: {
+    startEmojiEffect() {
+      floating({
+        content: joypixels.shortnameToUnicode(":heart_eyes:"),
+        duration: 3,
+        number: 20,
+        repeat: 1,
+        size: 3,
+      });
+    },
+    scrollBodyToBottom() {
+      const scrollBody = this.$refs.scrollable;
+
+      scrollBody.scrollToBottom();
+    },
+    updateHeaderHeight() {
+      const targetElement = this.$refs.header.$el;
+      const elementHeight = targetElement.getBoundingClientRect().height;
+
+      this.headerHeight = elementHeight;
+    },
+    updateFooterHeight() {
+      const targetElement = this.$refs.footer.$el;
+      const elementHeight = targetElement.getBoundingClientRect().height;
+
+      this.footerHeight = elementHeight;
+    },
   },
 };
 </script>
