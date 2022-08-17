@@ -75,6 +75,12 @@
           </v-btn>
           <a
             v-else
+            @click="
+              () => {
+                sendEmoji();
+                startEmojiEffect();
+              }
+            "
             class="px-2"
             style="font-size: 24px"
           >
@@ -154,6 +160,9 @@ export default {
           updatedAt: serverTimestamp(),
         });
       }
+    },
+    sendEmoji() {
+      this.sendMessage(joypixels.shortnameToUnicode(":heart_eyes:"));
     },
     startEmojiEffect() {
       floating({
