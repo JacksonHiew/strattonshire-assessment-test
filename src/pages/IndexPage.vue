@@ -137,6 +137,7 @@ export default {
     this.$nextTick(async () => {
       this.createNewUser();
       this.registerSnapshotListener();
+      this.requestNotificationPermission();
     });
   },
   methods: {
@@ -160,6 +161,27 @@ export default {
           updatedAt: serverTimestamp(),
         });
       }
+    },
+    requestNotificationPermission() {
+      if (!("Notification" in window)) {
+        alert("This browser does not support desktop notification");
+      } else if (Notification.permission === "granted") {
+        this.registerFcm();
+      } else if (Notification.permission !== "denied") {
+        Notification.requestPermission().then((permission) => {
+          if (permission === "granted") {
+            this.registerFcm();
+          }
+        });
+      }
+    },
+    registerFcm() {
+      this.getFcmToken();
+    },
+    async getFcmToken() {
+      await getToken(this.$messaging, {
+        vapidKey: process.env.VUE_APP_FCM_VAPID,
+      });
     },
     sendEmoji() {
       this.sendMessage(joypixels.shortnameToUnicode(":heart_eyes:"));
