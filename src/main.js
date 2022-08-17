@@ -6,6 +6,9 @@ import vuetify from './plugins/vuetify'
 import firebase from './plugins/firebase-config';
 
 Vue.config.productionTip = false
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register("./firebase-messaging-sw.js");
+}
 
 new Vue({
   router,
