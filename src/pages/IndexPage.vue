@@ -49,6 +49,11 @@
       <div style="width: 100%">
         <form
           class="d-flex align-center"
+          @submit.prevent="
+            () => {
+              sendMessage(messageContent);
+            }
+          "
         >
           <div class="d-flex mr-4" style="flex: 1">
             <v-text-field
@@ -83,6 +88,21 @@
 
 <script>
 import ChatBox from "@/components/ChatBox.vue";
+import {
+  addDoc,
+  collection,
+  serverTimestamp,
+  onSnapshot,
+  query,
+  orderBy,
+} from "firebase/firestore";
+import { getToken } from "firebase/messaging";
+import {
+  uniqueNamesGenerator,
+  adjectives,
+  names,
+} from "unique-names-generator";
+import { v4 as uuidv4 } from "uuid";
 import VirtualList from "vue-virtual-scroll-list";
 import joypixels from "emoji-toolkit";
 import floating from "@/plugins/floating";
@@ -96,16 +116,45 @@ export default {
     return {
       chatBox: ChatBox,
       joypixels: joypixels,
+      currentUid: "",
+      currentUsername: "",
+      messageContent: "",
       headerHeight: 0,
       footerHeight: 0,
+      messages: [],
     };
   },
   mounted() {
     this.updateHeaderHeight();
     this.updateFooterHeight();
 
+    this.$nextTick(async () => {
+      this.createNewUser();
+      this.registerSnapshotListener();
+    });
   },
   methods: {
+    generateMessages() {
+      for (let x = 0; x < 1000; x++) {
+        const uuid = uuidv4();
+        const shortName = uniqueNamesGenerator({
+          dictionaries: [adjectives, names],
+          length: 2,
+        });
+        const content = uniqueNamesGenerator({
+          dictionaries: [adjectives, adjectives],
+          length: 2,
+        });
+
+        addDoc(collection(this.$firestoredb, "Messages"), {
+          senderId: uuid,
+          senderName: shortName,
+          messageContent: content,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+      }
+    },
     startEmojiEffect() {
       floating({
         content: joypixels.shortnameToUnicode(":heart_eyes:"),
@@ -114,6 +163,44 @@ export default {
         repeat: 1,
         size: 3,
       });
+    },
+    registerSnapshotListener() {
+      const q = query(
+        collection(this.$firestoredb, "Messages"),
+        orderBy("createdAt", "asc")
+      );
+
+      onSnapshot(q, (querySnapshot) => {
+        this.messages = querySnapshot.docs.map((e) => e.data());
+
+        this.$nextTick(() => {
+          this.scrollBodyToBottom();
+        });
+      });
+    },
+    createNewUser() {
+      const uuid = uuidv4();
+      const shortName = uniqueNamesGenerator({
+        dictionaries: [adjectives, names],
+        length: 2,
+      });
+
+      this.currentUid = uuid;
+      this.currentUsername = shortName;
+    },
+    async sendMessage(message) {
+      const trimmedMessage = message.trim();
+
+      if (trimmedMessage != "") {
+        addDoc(collection(this.$firestoredb, "Messages"), {
+          senderId: this.currentUid,
+          senderName: this.currentUsername,
+          messageContent: trimmedMessage,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+        this.messageContent = "";
+      }
     },
     scrollBodyToBottom() {
       const scrollBody = this.$refs.scrollable;
