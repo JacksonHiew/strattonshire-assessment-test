@@ -5,7 +5,7 @@
       ref="header"
       color="primary"
       style="z-index: 1"
-      class="d-flex justify-center align-center"
+      class="d-flex justify-center align-center top-notch-padding"
     >
       <div class="d-flex justify-center align-center">
         <v-img
@@ -43,10 +43,10 @@
     <v-footer
       ref="footer"
       color="white"
-      class="py-2 px-2"
+      class="pt-2 px-2 bottom-notch-padding"
       style="box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1)"
     >
-      <div style="width: 100%">
+      <div class="pb-2" style="width: 100%">
         <form
           class="d-flex align-center"
           @submit.prevent="
@@ -121,11 +121,13 @@ export default {
       headerHeight: 0,
       footerHeight: 0,
       messages: [],
+      notch: 0,
     };
   },
   mounted() {
     this.updateHeaderHeight();
     this.updateFooterHeight();
+    this.updateNotchPadding();
 
     this.$nextTick(async () => {
       this.createNewUser();
@@ -208,6 +210,9 @@ export default {
 
       scrollBody.scrollToBottom();
     },
+    updateNotchPadding() {
+      this.notch = window.innerHeight - window.screen.availHeight;
+    },
     updateHeaderHeight() {
       const targetElement = this.$refs.header.$el;
       const elementHeight = targetElement.getBoundingClientRect().height;
@@ -224,4 +229,12 @@ export default {
 };
 </script>
 
-<style></style>
+<style>
+.top-notch-padding {
+  padding-top: env(safe-area-inset-top, 20px);
+}
+
+.bottom-notch-padding {
+  padding-bottom: env(safe-area-inset-bottom, 20px);
+}
+</style>
