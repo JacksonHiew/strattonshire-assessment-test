@@ -29,11 +29,11 @@
           :data-sources="
             messages.map((e) => ({
               ...e,
-              isSender: e.senderId === currentUid,
+              isSender: e.username === currentUsername,
             }))
           "
           :data-component="chatBox"
-          :data-key="'senderId'"
+          :data-key="'id'"
           ref="scrollable"
           class="px-2"
         />
@@ -95,7 +95,7 @@
 <script>
 import ChatBox from "@/components/ChatBox.vue";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { getToken } from "firebase/messaging";
+// import { getToken } from "firebase/messaging";
 import {
   uniqueNamesGenerator,
   adjectives,
@@ -116,7 +116,6 @@ export default {
     return {
       chatBox: ChatBox,
       joypixels: joypixels,
-      currentUid: "",
       currentUsername: "",
       messageContent: "",
       headerHeight: 0,
@@ -130,8 +129,8 @@ export default {
 
     this.$nextTick(async () => {
       this.createNewUser();
+      this.getInitialMessage();
       this.registerSnapshotListener();
-      this.requestNotificationPermission();
     });
   },
   methods: {
@@ -156,25 +155,9 @@ export default {
         });
       }
     },
-    requestNotificationPermission() {
-      if (!("Notification" in window)) {
-        alert("This browser does not support desktop notification");
-      } else if (Notification.permission === "granted") {
-        this.registerFcm();
-      } else if (Notification.permission !== "denied") {
-        Notification.requestPermission().then((permission) => {
-          if (permission === "granted") {
-            this.registerFcm();
-          }
-        });
-      }
-    },
-    registerFcm() {
-      this.getFcmToken();
-    },
-    async getFcmToken() {
-      await getToken(this.$messaging, {
-        vapidKey: process.env.VUE_APP_FCM_VAPID,
+    getInitialMessage() {
+      socket.on("initialized", (val) => {
+        this.handleChatData(val);
       });
     },
     sendEmoji() {
@@ -191,53 +174,34 @@ export default {
     },
     registerSnapshotListener() {
       socket.on("new-message-created", (val) => {
-        console.log(val || "new message");
+        this.handleChatData(val);
       });
+    },
+    handleChatData(val) {
+      this.messages = val;
 
-      // user-connect
-
-      /* const q = query(
-        collection(this.$firestoredb, "Messages"),
-        orderBy("createdAt", "asc")
-      );
-
-      onSnapshot(q, (querySnapshot) => {
-        this.messages = querySnapshot.docs.map((e) => e.data());
-
-        this.$nextTick(() => {
-          this.scrollBodyToBottom();
-        });
-      }); */
+      this.$nextTick(() => {
+        this.scrollBodyToBottom();
+      });
     },
     createNewUser() {
-      const uuid = uuidv4();
       const shortName = uniqueNamesGenerator({
         dictionaries: [adjectives, names],
         length: 2,
       });
 
-      this.currentUid = uuid;
       this.currentUsername = shortName;
     },
     async sendMessage(message) {
       const trimmedMessage = message.trim();
 
-      socket.emit("create-new-message", {
-        senderId: "123",
-        messageContent: trimmedMessage,
-      });
-      /* const trimmedMessage = message.trim();
-
       if (trimmedMessage != "") {
-        addDoc(collection(this.$firestoredb, "Messages"), {
-          senderId: this.currentUid,
-          senderName: this.currentUsername,
+        socket.emit("create-new-message", {
+          username: this.currentUsername,
           messageContent: trimmedMessage,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
         });
         this.messageContent = "";
-      } */
+      }
     },
     scrollBodyToBottom() {
       const scrollBody = this.$refs.scrollable;

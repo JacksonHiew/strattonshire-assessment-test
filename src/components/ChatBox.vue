@@ -16,7 +16,7 @@
             source.isSender ? 'white--text' : ''
           }`"
         >
-          {{ source.senderName }}
+          {{ source.username }}
         </h4>
       </div>
       <div class="chat-content pb-1">
@@ -36,9 +36,7 @@
         >
           {{
             moment(
-              source.createdAt != null
-                ? source.createdAt.toDate()
-                : new Date(Date.now())
+              source.createdAt != null ? source.createdAt : new Date(Date.now())
             ).format("LT")
           }}
         </p>
