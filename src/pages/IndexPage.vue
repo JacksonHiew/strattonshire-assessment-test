@@ -94,14 +94,7 @@
 
 <script>
 import ChatBox from "@/components/ChatBox.vue";
-import {
-  addDoc,
-  collection,
-  serverTimestamp,
-  onSnapshot,
-  query,
-  orderBy,
-} from "firebase/firestore";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { getToken } from "firebase/messaging";
 import {
   uniqueNamesGenerator,
@@ -112,6 +105,7 @@ import { v4 as uuidv4 } from "uuid";
 import VirtualList from "vue-virtual-scroll-list";
 import joypixels from "emoji-toolkit";
 import floating from "@/plugins/floating";
+import socket from "@/plugins/socket.io-config";
 
 export default {
   name: "IndexPage",
@@ -196,7 +190,13 @@ export default {
       });
     },
     registerSnapshotListener() {
-      const q = query(
+      socket.on("new-message-created", (val) => {
+        console.log(val || "new message");
+      });
+
+      // user-connect
+
+      /* const q = query(
         collection(this.$firestoredb, "Messages"),
         orderBy("createdAt", "asc")
       );
@@ -207,7 +207,7 @@ export default {
         this.$nextTick(() => {
           this.scrollBodyToBottom();
         });
-      });
+      }); */
     },
     createNewUser() {
       const uuid = uuidv4();
@@ -222,6 +222,12 @@ export default {
     async sendMessage(message) {
       const trimmedMessage = message.trim();
 
+      socket.emit("create-new-message", {
+        senderId: "123",
+        messageContent: trimmedMessage,
+      });
+      /* const trimmedMessage = message.trim();
+
       if (trimmedMessage != "") {
         addDoc(collection(this.$firestoredb, "Messages"), {
           senderId: this.currentUid,
@@ -231,7 +237,7 @@ export default {
           updatedAt: serverTimestamp(),
         });
         this.messageContent = "";
-      }
+      } */
     },
     scrollBodyToBottom() {
       const scrollBody = this.$refs.scrollable;
@@ -254,5 +260,4 @@ export default {
 };
 </script>
 
-<style>
-</style>
+<style></style>
