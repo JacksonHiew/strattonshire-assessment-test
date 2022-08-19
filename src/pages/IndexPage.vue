@@ -78,7 +78,6 @@
             @click="
               () => {
                 sendEmoji();
-                startEmojiEffect();
               }
             "
             class="px-2"
@@ -95,7 +94,6 @@
 <script>
 import ChatBox from "@/components/ChatBox.vue";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-// import { getToken } from "firebase/messaging";
 import {
   uniqueNamesGenerator,
   adjectives,
@@ -159,7 +157,7 @@ export default {
     },
     getInitialMessage() {
       socket.on("initialized", (val) => {
-        this.handleChatData(val);
+        this.handleChatData(val, false);
       });
     },
     sendEmoji() {
@@ -179,8 +177,17 @@ export default {
         this.handleChatData(val);
       });
     },
-    handleChatData(val) {
+    handleChatData(val, emojiEffect = true) {
       this.messages = val;
+
+      if (
+        joypixels.toShort(
+          this.messages[this.messages.length - 1].messageContent
+        ) == ":heart_eyes:" &&
+        emojiEffect == true
+      ) {
+        this.startEmojiEffect();
+      }
 
       this.$nextTick(() => {
         this.scrollBodyToBottom();
