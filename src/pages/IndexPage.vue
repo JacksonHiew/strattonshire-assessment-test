@@ -4,7 +4,7 @@
       dark
       ref="header"
       color="primary"
-      style="z-index: 1"
+      style="z-index: 1; height: unset"
       class="d-flex justify-center align-center top-notch-padding"
     >
       <div class="d-flex justify-center align-center">
