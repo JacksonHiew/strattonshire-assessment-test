@@ -41,7 +41,7 @@
     <v-footer
       ref="footer"
       color="white"
-      class="bottom-notch-padding left-notch-padding right-notch-padding"
+      class="pt-0 bottom-notch-padding left-notch-padding right-notch-padding"
       style="box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1)"
     >
       <div class="py-2 px-2" style="width: 100%">
