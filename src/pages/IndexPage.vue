@@ -1,11 +1,11 @@
 <template>
-  <v-app>
+  <v-app style="height: 100vh">
     <v-app-bar
       dark
       ref="header"
       color="primary"
-      style="z-index: 1; height: unset"
-      class="d-flex justify-center align-center top-notch-padding"
+      style="z-index: 1; height: unset; flex: 0 0 56px"
+      class="d-flex justify-center align-center top-notch-padding left-notch-padding right-notch-padding"
     >
       <div class="d-flex justify-center align-center">
         <v-img
@@ -19,34 +19,32 @@
       </div>
     </v-app-bar>
 
-    <v-main>
-      <div
-        class="d-flex align-end"
-        :style="`height: calc(100vh - ${headerHeight + footerHeight}px)`"
-      >
-        <virtual-list
-          style="width: 100%; height: 100%; overflow-y: auto"
-          :data-sources="
-            messages.map((e) => ({
-              ...e,
-              isSender: e.username === currentUsername,
-            }))
-          "
-          :data-component="chatBox"
-          :data-key="'id'"
-          ref="scrollable"
-          class="px-2"
-        />
-      </div>
-    </v-main>
+    <div
+      class="d-flex align-end left-notch-padding right-notch-padding"
+      style="overflow-y: hidden; flex: 1"
+    >
+      <virtual-list
+        style="width: 100%; height: 100%; overflow-y: auto"
+        :data-sources="
+          messages.map((e) => ({
+            ...e,
+            isSender: e.username === currentUsername,
+          }))
+        "
+        :data-component="chatBox"
+        :data-key="'id'"
+        ref="scrollable"
+        class="px-2"
+      />
+    </div>
 
     <v-footer
       ref="footer"
       color="white"
-      class="pt-2 px-2 bottom-notch-padding"
+      class="bottom-notch-padding left-notch-padding right-notch-padding"
       style="box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1)"
     >
-      <div class="pb-2" style="width: 100%">
+      <div class="py-2 px-2" style="width: 100%">
         <form
           class="d-flex align-center"
           @submit.prevent="
@@ -118,14 +116,13 @@ export default {
       messageContent: "",
       headerHeight: 0,
       footerHeight: 0,
+      bodyHeight: 0,
       messages: [],
-      notch: 0,
     };
   },
   mounted() {
     this.updateHeaderHeight();
     this.updateFooterHeight();
-    this.updateNotchPadding();
 
     this.$nextTick(async () => {
       this.createNewUser();
@@ -217,9 +214,6 @@ export default {
 
       scrollBody.scrollToBottom();
     },
-    updateNotchPadding() {
-      this.notch = window.innerHeight - window.screen.availHeight;
-    },
     updateHeaderHeight() {
       const targetElement = this.$refs.header.$el;
       const elementHeight = targetElement.getBoundingClientRect().height;
@@ -240,8 +234,23 @@ export default {
 .top-notch-padding {
   padding-top: env(safe-area-inset-top, 20px);
 }
-
+.left-notch-padding {
+  padding-left: env(safe-area-inset-left, 20px);
+}
 .bottom-notch-padding {
   padding-bottom: env(safe-area-inset-bottom, 20px);
+}
+.right-notch-padding {
+  padding-right: env(safe-area-inset-right, 20px);
+}
+
+html,
+body {
+  overflow-y: hidden;
+}
+
+.app-height {
+  height: 100vh;
+  height: -webkit-fill-available;
 }
 </style>
